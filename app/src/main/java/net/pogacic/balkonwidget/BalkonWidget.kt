@@ -9,27 +9,34 @@ import android.widget.RemoteViews
 class BalkonWidget : AppWidgetProvider() {
 
     override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray
-    ) {
-        for (appWidgetId in appWidgetIds) {
+    context: Context,
+    appWidgetManager: AppWidgetManager,
+    appWidgetIds: IntArray
+) {
+    android.util.Log.e(
+        "BalkonWidget",
+        "GREEN TEST: onUpdate called, IDs=${appWidgetIds.joinToString()}"
+    )
 
-            val views = RemoteViews(
-                context.packageName,
-                R.layout.widget_layout
-            )
+    for (id in appWidgetIds) {
+        val views = RemoteViews(
+            context.packageName,
+            R.layout.widget_layout
+        )
 
-            // TEST VALUES — no network, no JSON
-            views.setTextViewText(R.id.temp, "123.4°C")
-            views.setTextViewText(R.id.feels, "Feels Like 567.8°C")
-            views.setTextViewText(R.id.humidity, "Humidity 75%")
-            views.setTextViewText(R.id.abs, "Abs: 22.6 g/m3")
+        // Make the entire widget unmistakable
+        views.setInt(
+            R.id.root,
+            "setBackgroundColor",
+            android.graphics.Color.GREEN
+        )
 
-            appWidgetManager.updateAppWidget(
-                appWidgetId,
-                views
-            )
-        }
+        views.setTextViewText(R.id.location, "GREEN TEST - UPDATED")
+        views.setTextViewText(R.id.temp, "123")
+        views.setTextViewText(R.id.feels, "FEELS 456")
+        views.setTextViewText(R.id.humidity, "HUMIDITY 789%")
+        views.setTextViewText(R.id.abs, "ABS 321")
+
+        appWidgetManager.updateAppWidget(id, views)
     }
 }
