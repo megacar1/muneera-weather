@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.balkon.widget'
+    namespace 'net.pogacic.balkonwidget'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.balkon.widget"
+        applicationId "net.pogacic.balkonwidget"
         minSdk 26
         targetSdk 34
         versionCode 1
