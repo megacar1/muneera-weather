@@ -1,63 +1,21 @@
-package com.example.balkonwidget // <-- keep your package name
-
-import android.app.PendingIntent
-import android.appwidget.AppWidgetManager
-import android.appwidget.AppWidgetProvider
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.widget.RemoteViews
-import org.json.JSONObject
-import java.net.URL
-import java.util.Calendar
-import java.util.TimeZone
-
-class BalkonWidget : AppWidgetProvider() {
-
-   override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
-    val pendingResult = goAsync() // <-- THIS IS THE FIX
-    
+override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
+    val pendingResult = goAsync()
     Thread {
         try {
-            // Add User-Agent - some hosts block Java requests
-            val conn = URL("https://pogacic.net/json.php").openConnection() as java.net.HttpURLConnection
-            conn.setRequestProperty("User-Agent", "Mozilla/5.0")
-            conn.connectTimeout = 15000
-            conn.readTimeout = 15000
-            
-            val jsonText = conn.inputStream.bufferedReader().readText()
-            val json = JSONObject(jsonText)
-            
-            val temp = json.optDouble("temperature")
-            val hum = json.optDouble("humidity")
-            val abs = json.optDouble("absolute_humidity")
-            val feels = json.optDouble("feels_like")
-
-            val tz = TimeZone.getTimeZone("Asia/Dubai")
-            val hour = Calendar.getInstance(tz).get(Calendar.HOUR_OF_DAY)
-            val isDay = hour in 6..18
-            // Use your drawables, fallback to system if missing
-            val iconRes = try {
-                if (isDay) R.drawable.ic_sun else R.drawable.ic_night_cloud
-            } catch (e: Exception) {
-                if (isDay) android.R.drawable.ic_menu_day else android.R.drawable.ic_menu_night
-            }
-
+            android.util.Log.d("BalkonWidget", "TEST UPDATE START")
             for (id in ids) {
                 val views = RemoteViews(context.packageName, R.layout.widget_layout).apply {
-                    setTextViewText(R.id.location, "Al Muneera • Now")
-                    setTextViewText(R.id.temp, String.format("%.1f°C", temp))
-                    setTextViewText(R.id.feels, String.format("Feels Like %.1f°C", feels))
-                    setTextViewText(R.id.humidity, "Humidity ${hum.toInt()}%")
-                    setTextViewText(R.id.abs, "Abs: %.1f g/m3".format(abs))
-                    setImageViewResource(R.id.big_icon, iconRes)
+                    setTextViewText(R.id.location, "Al Muneera • TEST")
+                    setTextViewText(R.id.temp, "99.9°C")
+                    setTextViewText(R.id.feels, "Feels Like 100°C TEST")
+                    setTextViewText(R.id.humidity, "Humidity 99%")
+                    setTextViewText(R.id.abs, "Abs: 99.9 g/m3")
                 }
                 manager.updateAppWidget(id, views)
             }
-        } catch (e: Exception) {
-            android.util.Log.e("BalkonWidget", "FAIL", e)
+            android.util.Log.d("BalkonWidget", "TEST UPDATE DONE")
         } finally {
-            pendingResult.finish() // <-- Tell Android we're done
+            pendingResult.finish()
         }
     }.start()
 }
