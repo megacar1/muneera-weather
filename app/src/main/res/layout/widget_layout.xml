@@ -65,7 +65,7 @@
 
         </LinearLayout>
 
-        <!-- Single connected humidity row -->
+               <!-- Single connected humidity row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -108,7 +108,8 @@
                     android:textColor="#FFFFFF"
                     android:textSize="20sp" />
 
-
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Small refresh button overlaid in the upper-right corner -->
