@@ -1,3 +1,4 @@
+
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root"
@@ -21,7 +22,7 @@
             android:textColor="#CCCCCC"
             android:textSize="14sp" />
 
-        <!-- Temperature, feels like, and sun icon -->
+        <!-- Temperature, feels like, and sun/moon icon -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -59,47 +60,72 @@
                 android:id="@+id/big_icon"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
-                android:contentDescription="Sunny weather"
+                android:contentDescription="Weather"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_sun" />
 
         </LinearLayout>
 
-        <!-- Humidity and absolute humidity -->
+        <!-- Single connected humidity row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:background="#18B8D8F5"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp">
 
-            <TextView
-                android:id="@+id/humidity"
+            <!-- Custom droplet icon -->
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/ic_droplet"
+                android:contentDescription="Humidity"
+                android:scaleType="fitCenter" />
+
+            <!-- Humidity label and percentage -->
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="4dp"
-                android:background="#22FFFFFF"
-                android:padding="8dp"
-                android:text="Humidity --%"
-                android:textColor="#FFFFFF"
-                android:textSize="12sp" />
+                android:orientation="vertical">
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Humidity"
+                    android:textColor="#B8D7F5"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/humidity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--%"
+                    android:textColor="#FFFFFF"
+                    android:textSize="20sp" />
+
+            </LinearLayout>
+
+            <!-- Absolute humidity -->
             <TextView
                 android:id="@+id/abs"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:background="#22FFFFFF"
-                android:padding="8dp"
-                android:text="Abs: -- g/m³"
+                android:layout_marginStart="8dp"
+                android:text="(-- g/m³)"
                 android:textColor="#FFFFFF"
-                android:textSize="12sp" />
+                android:textSize="14sp" />
 
         </LinearLayout>
 
     </LinearLayout>
 
-    <!-- Refresh button overlays the content at the upper-right -->
+    <!-- Small refresh button overlaid in the upper-right corner -->
     <ImageButton
         android:id="@+id/refresh_button"
         android:layout_width="28dp"
