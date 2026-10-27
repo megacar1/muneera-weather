@@ -1,21 +1,59 @@
-override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
-    val pendingResult = goAsync()
-    Thread {
-        try {
-            android.util.Log.d("BalkonWidget", "TEST UPDATE START")
-            for (id in ids) {
-                val views = RemoteViews(context.packageName, R.layout.widget_layout).apply {
-                    setTextViewText(R.id.location, "Al Muneera • TEST")
-                    setTextViewText(R.id.temp, "99.9°C")
-                    setTextViewText(R.id.feels, "Feels Like 100°C TEST")
-                    setTextViewText(R.id.humidity, "Humidity 99%")
-                    setTextViewText(R.id.abs, "Abs: 99.9 g/m3")
+package net.pogacic.balkonwidget
+
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProvider
+import android.content.Context
+import android.widget.RemoteViews
+import org.json.JSONObject
+import java.net.URL
+import java.util.Calendar
+import java.util.TimeZone
+
+class BalkonWidget : AppWidgetProvider() {
+
+    override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
+        val pendingResult = goAsync()
+        Thread {
+            try {
+                val conn = URL("https://pogacic.net/json.php").openConnection() as java.net.HttpURLConnection
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0")
+                conn.connectTimeout = 15000
+                conn.readTimeout = 15000
+                
+                val jsonText = conn.inputStream.bufferedReader().readText()
+                val json = JSONObject(jsonText)
+                
+                val temp = json.optDouble("temperature")
+                val hum = json.optDouble("humidity")
+                val abs = json.optDouble("absolute_humidity")
+                val feels = json.optDouble("feels_like")
+
+                val tz = TimeZone.getTimeZone("Asia/Dubai")
+                val hour = Calendar.getInstance(tz).get(Calendar.HOUR_OF_DAY)
+                val isDay = hour in 6..18
+                
+                for (id in ids) {
+                    val views = RemoteViews(context.packageName, R.layout.widget_layout).apply {
+                        setTextViewText(R.id.location, "Al Muneera • Now")
+                        setTextViewText(R.id.temp, String.format("%.1f°C", temp))
+                        setTextViewText(R.id.feels, String.format("Feels Like %.1f°C", feels))
+                        setTextViewText(R.id.humidity, "Humidity ${hum.toInt()}%")
+                        setTextViewText(R.id.abs, "Abs: %.1f g/m3".format(abs))
+                    }
+                    manager.updateAppWidget(id, views)
                 }
-                manager.updateAppWidget(id, views)
+            } catch (e: Exception) {
+                android.util.Log.e("BalkonWidget", "FAIL", e)
+                // Show error so you know it tried
+                for (id in ids) {
+                    val views = RemoteViews(context.packageName, R.layout.widget_layout).apply {
+                        setTextViewText(R.id.temp, "ERR")
+                    }
+                    manager.updateAppWidget(id, views)
+                }
+            } finally {
+                pendingResult.finish()
             }
-            android.util.Log.d("BalkonWidget", "TEST UPDATE DONE")
-        } finally {
-            pendingResult.finish()
-        }
-    }.start()
+        }.start()
+    }
 }
