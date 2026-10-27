@@ -104,23 +104,10 @@
                     android:id="@+id/humidity"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="--%"
+                    android:text="--% (-- g/m³)"
                     android:textColor="#FFFFFF"
                     android:textSize="20sp" />
 
-            </LinearLayout>
-
-            <!-- Absolute humidity -->
-            <TextView
-                android:id="@+id/abs"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="(-- g/m³)"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
-
-        </LinearLayout>
 
     </LinearLayout>
 
