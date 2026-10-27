@@ -20,7 +20,7 @@ class BalkonWidget : AppWidgetProvider() {
     Thread {
         try {
             // Add User-Agent - some hosts block Java requests
-            val conn = URL("https://pogacic.net/weather.php?json=1").openConnection() as java.net.HttpURLConnection
+            val conn = URL("https://pogacic.net/json.php").openConnection() as java.net.HttpURLConnection
             conn.setRequestProperty("User-Agent", "Mozilla/5.0")
             conn.connectTimeout = 15000
             conn.readTimeout = 15000
