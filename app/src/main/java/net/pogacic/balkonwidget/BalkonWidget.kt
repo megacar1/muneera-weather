@@ -15,24 +15,10 @@ class BalkonWidget : AppWidgetProvider() {
         val pendingResult = goAsync()
         Thread {
             try {
-                val host = "pogacic.net"
-val path = "/json.php"
-
-// Resolve the hostname explicitly first.
-val addresses = java.net.InetAddress.getAllByName(host)
-if (addresses.isEmpty()) {
-    throw java.net.UnknownHostException("No addresses returned for $host")
-}
-
-val ip = addresses[0]
-android.util.Log.i("BalkonWidget", "Resolved $host to ${ip.hostAddress}")
-
-// Connect to the IP, but keep the original hostname for HTTPS.
-val url = URL("https://$host$path")
-val conn = url.openConnection() as java.net.HttpURLConnection
-conn.connectTimeout = 15000
-conn.readTimeout = 15000
-conn.setRequestProperty("User-Agent", "Mozilla/5.0")
+                val conn = URL("https://pogacic.net/json.php").openConnection() as java.net.HttpURLConnection
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0")
+                conn.connectTimeout = 15000
+                conn.readTimeout = 15000
                 
                 val jsonText = conn.inputStream.bufferedReader().readText()
                 val json = JSONObject(jsonText)
