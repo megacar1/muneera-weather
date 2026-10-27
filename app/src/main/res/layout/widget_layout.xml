@@ -1,101 +1,111 @@
 
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#990B1118"
-    android:padding="12dp">
+    android:background="#990B1118">
 
-    <!-- Location -->
-    <TextView
-        android:id="@+id/location"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Al Muneera • Now"
-        android:textColor="#CCCCCC"
-        android:textSize="14sp" />
-
-    <!-- Temperature and weather icon -->
+    <!-- Main widget content -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="12dp">
 
-        <LinearLayout
-            android:layout_width="0dp"
+        <!-- Location -->
+        <TextView
+            android:id="@+id/location"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Al Muneera • Now"
+            android:textColor="#CCCCCC"
+            android:textSize="14sp" />
+
+        <!-- Temperature, feels like, and sun icon -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-            <TextView
-                android:id="@+id/temp"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="--°C"
-                android:textColor="#FFFFFF"
-                android:textSize="44sp"
-                android:textStyle="bold" />
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/feels"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="Feels Like --°C"
-                android:textColor="#B0BAC8"
-                android:textSize="14sp" />
+                <TextView
+                    android:id="@+id/temp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--°C"
+                    android:textColor="#FFFFFF"
+                    android:textSize="44sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/feels"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Feels Like --°C"
+                    android:textColor="#B0BAC8"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/big_icon"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:contentDescription="Sunny weather"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_sun" />
+
         </LinearLayout>
 
-        <ImageView
-            android:id="@+id/big_icon"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:contentDescription="Sunny weather"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_sun" />
+        <!-- Humidity and absolute humidity -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/humidity"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="#22FFFFFF"
+                android:padding="8dp"
+                android:text="Humidity --%"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/abs"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:background="#22FFFFFF"
+                android:padding="8dp"
+                android:text="Abs: -- g/m³"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
-    <!-- Humidity and absolute humidity -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/humidity"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="4dp"
-            android:background="#22FFFFFF"
-            android:padding="8dp"
-            android:text="Humidity --%"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp" />
-
-        <TextView
-            android:id="@+id/abs"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="4dp"
-            android:background="#22FFFFFF"
-            android:padding="8dp"
-            android:text="Abs: -- g/m³"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp" />
-    </LinearLayout>
-
-    <!-- Small refresh button -->
+    <!-- Refresh button overlays the content at the upper-right -->
     <ImageButton
         android:id="@+id/refresh_button"
         android:layout_width="28dp"
         android:layout_height="28dp"
-        android:layout_gravity="end"
+        android:layout_gravity="top|end"
         android:background="@android:color/transparent"
         android:contentDescription="Refresh weather"
         android:padding="6dp"
@@ -103,4 +113,4 @@
         android:src="@android:drawable/ic_popup_sync"
         android:alpha="0.45" />
 
-</LinearLayout>
+</FrameLayout>
