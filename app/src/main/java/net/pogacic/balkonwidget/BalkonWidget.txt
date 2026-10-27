@@ -1,0 +1,33 @@
+package net.pogacic.balkonwidget
+
+import android.app.PendingIntent
+import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProvider
+import android.content.Context
+import android.content.Intent
+import android.widget.RemoteViews
+import androidx.work.*
+import java.util.concurrent.TimeUnit
+
+class BalkonWidget : AppWidgetProvider() {
+    override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
+        for (id in ids) {
+            val views = RemoteViews(context.packageName, R.layout.widget_layout)
+            val intent = Intent(context, BalkonWidget::class.java).apply { action = "REFRESH" }
+            val pi = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+            views.setOnClickPendingIntent(R.id.tvUpdated, pi)
+            manager.updateAppWidget(id, views)
+        }
+        val periodic = PeriodicWorkRequestBuilder<WeatherWorker>(15, TimeUnit.MINUTES)
+            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+            .build()
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork("balkon_weather", ExistingPeriodicWorkPolicy.KEEP, periodic)
+        WorkManager.getInstance(context).enqueue(OneTimeWorkRequestBuilder<WeatherWorker>().build())
+    }
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        if (intent.action == "REFRESH") {
+            WorkManager.getInstance(context).enqueue(OneTimeWorkRequestBuilder<WeatherWorker>().build())
+        }
+    }
+}
