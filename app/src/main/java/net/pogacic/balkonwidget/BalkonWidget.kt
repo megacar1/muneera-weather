@@ -8,6 +8,8 @@ import org.json.JSONObject
 import java.net.URL
 import java.util.Calendar
 import java.util.TimeZone
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class BalkonWidget : AppWidgetProvider() {
 
@@ -30,15 +32,17 @@ class BalkonWidget : AppWidgetProvider() {
 
                 val tz = TimeZone.getTimeZone("Asia/Dubai")
                 val hour = Calendar.getInstance(tz).get(Calendar.HOUR_OF_DAY)
-                val isDay = hour in 6..18
+                val isDay = hour in 6..18\
+                val updateTime = SimpleDateFormat("HH:mm", Locale.US).apply {
+                    timeZone = TimeZone.getTimeZone("Asia/Dubai")
+                    }.format(Calendar.getInstance().time)
                 
                 for (id in ids) {
                     val views = RemoteViews(context.packageName, R.layout.widget_layout).apply {
-                        setTextViewText(R.id.location, "Al Muneera • Now")
+                        setTextViewText(R.id.location, "Al Muneera • Last Update: $updateTime")
                         setTextViewText(R.id.temp, String.format("%.1f°C", temp))
                         setTextViewText(R.id.feels, String.format("Feels Like %.1f°C", feels))
-                        setTextViewText(R.id.humidity, "${hum.toInt()}%")
-                        setTextViewText(R.id.abs, "Abs: %.1f g/m3".format(abs))
+                        setTextViewText(R.id.humidity, "${hum.toInt()}% (${String.format("%.1f", abs)} g/m³)")
                         setImageViewResource(R.id.big_icon, if (isDay) R.drawable.ic_sun else R.drawable.ic_moon)
                     }
                     manager.updateAppWidget(id, views)
