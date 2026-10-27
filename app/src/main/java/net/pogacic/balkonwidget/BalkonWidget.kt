@@ -32,7 +32,7 @@ class BalkonWidget : AppWidgetProvider() {
 
                 val tz = TimeZone.getTimeZone("Asia/Dubai")
                 val hour = Calendar.getInstance(tz).get(Calendar.HOUR_OF_DAY)
-                val isDay = hour in 6..18\
+                val isDay = hour in 6..18
                 val updateTime = SimpleDateFormat("HH:mm", Locale.US).apply {
                     timeZone = TimeZone.getTimeZone("Asia/Dubai")
                     }.format(Calendar.getInstance().time)
