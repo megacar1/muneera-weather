@@ -39,6 +39,7 @@ class BalkonWidget : AppWidgetProvider() {
                         setTextViewText(R.id.feels, String.format("Feels Like %.1f°C", feels))
                         setTextViewText(R.id.humidity, "Humidity ${hum.toInt()}%")
                         setTextViewText(R.id.abs, "Abs: %.1f g/m3".format(abs))
+                        setImageViewResource(R.id.big_icon, if (isDay) R.drawable.ic_sun else R.drawable.ic_moon)
                     }
                     manager.updateAppWidget(id, views)
                 }
