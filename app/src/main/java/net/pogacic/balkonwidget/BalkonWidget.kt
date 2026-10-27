@@ -1,125 +1,59 @@
-
 package net.pogacic.balkonwidget
 
-import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
-import android.content.Intent
-import android.graphics.Color
-import android.util.Log
 import android.widget.RemoteViews
+import org.json.JSONObject
+import java.net.URL
+import java.util.Calendar
+import java.util.TimeZone
 
 class BalkonWidget : AppWidgetProvider() {
 
-    companion object {
-        const val ACTION_REFRESH =
-            "net.pogacic.balkonwidget.ACTION_REFRESH"
+    override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
+        val pendingResult = goAsync()
+        Thread {
+            try {
+                val conn = URL("https://pogacic.net/json.php").openConnection() as java.net.HttpURLConnection
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0")
+                conn.connectTimeout = 15000
+                conn.readTimeout = 15000
+                
+                val jsonText = conn.inputStream.bufferedReader().readText()
+                val json = JSONObject(jsonText)
+                
+                val temp = json.optDouble("temperature")
+                val hum = json.optDouble("humidity")
+                val abs = json.optDouble("absolute_humidity")
+                val feels = json.optDouble("feels_like")
 
-        const val EXTRA_MANUAL =
-            "net.pogacic.balkonwidget.EXTRA_MANUAL"
-    }
-
-    override fun onUpdate(
-        context: Context,
-        appWidgetManager: AppWidgetManager,
-        appWidgetIds: IntArray
-    ) {
-        Log.e(
-            "BalkonWidget",
-            "onUpdate called: ${appWidgetIds.joinToString()}"
-        )
-
-        for (id in appWidgetIds) {
-            updateWidget(
-                context,
-                appWidgetManager,
-                id,
-                false
-            )
-        }
-    }
-
-    private fun updateWidget(
-        context: Context,
-        manager: AppWidgetManager,
-        id: Int,
-        manual: Boolean
-    ) {
-        val views = RemoteViews(
-            context.packageName,
-            R.layout.widget_layout
-        )
-
-        // Obvious test appearance
-        views.setInt(
-            R.id.root,
-            "setBackgroundColor",
-            Color.GREEN
-        )
-
-        views.setTextViewText(
-            R.id.location,
-            if (manual) "BUTTON CLICK WORKED" else "KOTLIN UPDATE WORKED"
-        )
-        views.setTextViewText(R.id.temp, "123")
-        views.setTextViewText(R.id.feels, "FEELS 456")
-        views.setTextViewText(R.id.humidity, "HUMIDITY 789%")
-        views.setTextViewText(R.id.abs, "ABS 321")
-
-        val intent = Intent(
-            context,
-            BalkonWidget::class.java
-        ).apply {
-            action = ACTION_REFRESH
-            putExtra(
-                AppWidgetManager.EXTRA_APPWIDGET_ID,
-                id
-            )
-        }
-
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            id,
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or
-                PendingIntent.FLAG_IMMUTABLE
-        )
-
-        views.setOnClickPendingIntent(
-            R.id.refresh_button,
-            pendingIntent
-        )
-
-        manager.updateAppWidget(id, views)
-    }
-
-    override fun onReceive(
-        context: Context,
-        intent: Intent
-    ) {
-        if (intent.action == ACTION_REFRESH) {
-            val id = intent.getIntExtra(
-                AppWidgetManager.EXTRA_APPWIDGET_ID,
-                AppWidgetManager.INVALID_APPWIDGET_ID
-            )
-
-            Log.e(
-                "BalkonWidget",
-                "Refresh button received; widget ID=$id"
-            )
-
-            if (id != AppWidgetManager.INVALID_APPWIDGET_ID) {
-                updateWidget(
-                    context,
-                    AppWidgetManager.getInstance(context),
-                    id,
-                    true
-                )
+                val tz = TimeZone.getTimeZone("Asia/Dubai")
+                val hour = Calendar.getInstance(tz).get(Calendar.HOUR_OF_DAY)
+                val isDay = hour in 6..18
+                
+                for (id in ids) {
+                    val views = RemoteViews(context.packageName, R.layout.widget_layout).apply {
+                        setTextViewText(R.id.location, "Al Muneera • Now")
+                        setTextViewText(R.id.temp, String.format("%.1f°C", temp))
+                        setTextViewText(R.id.feels, String.format("Feels Like %.1f°C", feels))
+                        setTextViewText(R.id.humidity, "Humidity ${hum.toInt()}%")
+                        setTextViewText(R.id.abs, "Abs: %.1f g/m3".format(abs))
+                    }
+                    manager.updateAppWidget(id, views)
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("BalkonWidget", "FAIL", e)
+                // Show error so you know it tried
+                for (id in ids) {
+                    val views = RemoteViews(context.packageName, R.layout.widget_layout).apply {
+                        setTextViewText(R.id.temp, "ERR")
+                    }
+                    manager.updateAppWidget(id, views)
+                }
+            } finally {
+                pendingResult.finish()
             }
-            return
-        }
-
-        super.onReceive(context, intent)
+        }.start()
     }
 }
