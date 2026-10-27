@@ -42,18 +42,25 @@ class BalkonWidget : AppWidgetProvider() {
                     }
                     manager.updateAppWidget(id, views)
                 }
-            } catch (e: Exception) {
-                android.util.Log.e("BalkonWidget", "FAIL", e)
-                // Show error so you know it tried
-                for (id in ids) {
-                    val views = RemoteViews(context.packageName, R.layout.widget_layout).apply {
-                        setTextViewText(R.id.temp, "ERR")
-                    }
-                    manager.updateAppWidget(id, views)
-                }
-            } finally {
-                pendingResult.finish()
-            }
+} catch (e: Exception) {
+    val errorType = e.javaClass.simpleName
+    val errorMessage = e.message ?: "(no message)"
+
+    android.util.Log.e(
+        "BalkonWidget",
+        "FAIL: $errorType: $errorMessage\n${android.util.Log.getStackTraceString(e)}"
+    )
+
+    for (id in ids) {
+        val views = RemoteViews(context.packageName, R.layout.widget_layout).apply {
+            setTextViewText(R.id.temp, "ERR: $errorType")
+            setTextViewText(R.id.feels, errorMessage.take(100))
+        }
+        manager.updateAppWidget(id, views)
+    }
+} finally {
+    pendingResult.finish()
+}
         }.start()
     }
 }
