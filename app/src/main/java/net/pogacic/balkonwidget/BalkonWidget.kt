@@ -10,6 +10,9 @@ import java.util.Calendar
 import java.util.TimeZone
 import java.text.SimpleDateFormat
 import java.util.Locale
+import android.app.PendingIntent
+import android.content.ComponentName
+import android.content.Intent
 
 class BalkonWidget : AppWidgetProvider() {
 
@@ -44,6 +47,7 @@ class BalkonWidget : AppWidgetProvider() {
                         setTextViewText(R.id.feels, String.format("Feels Like %.1f°C", feels))
                         setTextViewText(R.id.humidity, "${hum.toInt()}% (${String.format("%.1f", abs)} g/m³)")
                         setImageViewResource(R.id.big_icon, if (isDay) R.drawable.ic_sun else R.drawable.ic_moon)
+                        setOnClickPendingIntent(R.id.refresh_button, PendingIntent.getBroadcast(context, 0, Intent(context, BalkonWidget::class.java).setAction(ACTION_REFRESH), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
                     }
                     manager.updateAppWidget(id, views)
                 }
