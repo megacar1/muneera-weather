@@ -90,8 +90,8 @@ class BalkonWidget : AppWidgetProvider() {
 
     for (id in ids) {
         val views = RemoteViews(context.packageName, R.layout.widget_layout).apply {
-            setTextViewText(R.id.temperature, "-")
-            setTextViewText(R.id.feels_like, "-")
+            setTextViewText(R.id.temp, "-")
+            setTextViewText(R.id.feels, "-")
             setTextViewText(R.id.humidity, "-")
         }
         manager.updateAppWidget(id, views)
