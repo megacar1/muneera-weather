@@ -87,15 +87,6 @@ class BalkonWidget : AppWidgetProvider() {
         "BalkonWidget",
         "FAIL: $errorType: $errorMessage\n${android.util.Log.getStackTraceString(e)}"
     )
-
-    for (id in ids) {
-        val views = RemoteViews(context.packageName, R.layout.widget_layout).apply {
-            setTextViewText(R.id.temp, "-")
-            setTextViewText(R.id.feels, "-")
-            setTextViewText(R.id.humidity, "-")
-        }
-        manager.updateAppWidget(id, views)
-    }
 } finally {
     pendingResult.finish()
 }
