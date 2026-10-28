@@ -72,4 +72,15 @@ class BalkonWidget : AppWidgetProvider() {
 }
         }.start()
     }
+ override fun onReceive(context: Context, intent: Intent) {
+    if (intent.action == "net.pogacic.balkonwidget.REFRESH") {
+        val manager = AppWidgetManager.getInstance(context)
+        val ids = manager.getAppWidgetIds(
+            ComponentName(context, BalkonWidget::class.java)
+        )
+        onUpdate(context, manager, ids)
+    } else {
+        super.onReceive(context, intent)
+    }
+}   
 }
