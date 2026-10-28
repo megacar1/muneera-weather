@@ -20,14 +20,41 @@ class BalkonWidget : AppWidgetProvider() {
         val pendingResult = goAsync()
         Thread {
             try {
-                val conn = URL("https://pogacic.net/json.php").openConnection() as java.net.HttpURLConnection
-                conn.setRequestProperty("User-Agent", "Mozilla/5.0")
-                conn.connectTimeout = 15000
-                conn.readTimeout = 15000
                 
-                val jsonText = conn.inputStream.bufferedReader().readText()
-                val json = JSONObject(jsonText)
-                
+                var jsonText: String? = null
+                var lastError: Exception? = null
+
+                // Maximum 5 attempts, waiting 2 seconds before each.
+                for (attempt in 0 until 5) {
+                    Thread.sleep(2000)
+
+                    var conn: java.net.HttpURLConnection? = null
+
+                    try {
+                        conn = URL("https://pogacic.net/json.php")
+                            .openConnection() as java.net.HttpURLConnection
+
+                        conn.setRequestProperty("User-Agent", "Mozilla/5.0")
+                        conn.connectTimeout = 10000
+                        conn.readTimeout = 10000
+
+                        jsonText = conn.inputStream.bufferedReader().use {
+                            it.readText()
+                        }
+
+                        break
+                    } catch (e: Exception) {
+                        lastError = e
+                    } finally {
+                        conn?.disconnect()
+                    }
+                }
+
+                val json = JSONObject(
+                    jsonText ?: throw (
+                        lastError ?: Exception("Weather fetch failed after 5 attempts")
+                    )
+                )
                 val temp = json.optDouble("temperature")
                 val hum = json.optDouble("humidity")
                 val abs = json.optDouble("absolute_humidity")
@@ -51,6 +78,7 @@ class BalkonWidget : AppWidgetProvider() {
                     }
                     manager.updateAppWidget(id, views)
                 }
+
 } catch (e: Exception) {
     val errorType = e.javaClass.simpleName
     val errorMessage = e.message ?: "(no message)"
@@ -62,14 +90,16 @@ class BalkonWidget : AppWidgetProvider() {
 
     for (id in ids) {
         val views = RemoteViews(context.packageName, R.layout.widget_layout).apply {
-            setTextViewText(R.id.temp, "ERR: $errorType")
-            setTextViewText(R.id.feels, errorMessage.take(100))
+            setTextViewText(R.id.temperature, "-")
+            setTextViewText(R.id.feels_like, "-")
+            setTextViewText(R.id.humidity, "-")
         }
         manager.updateAppWidget(id, views)
     }
 } finally {
     pendingResult.finish()
 }
+    
         }.start()
     }
  override fun onReceive(context: Context, intent: Intent) {
