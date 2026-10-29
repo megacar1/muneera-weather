@@ -68,10 +68,12 @@ class BalkonWidget : AppWidgetProvider() {
                 val hum = json.optDouble("humidity")
                 val abs = json.optDouble("absolute_humidity")
                 val feels = json.optDouble("feels_like")
-
+                val sunrise = json.optLong("sunrise")
+                val sunset = json.optLong("sunset")
                 val tz = TimeZone.getTimeZone("Asia/Dubai")
                 val hour = Calendar.getInstance(tz).get(Calendar.HOUR_OF_DAY)
-                val isDay = hour in 6..18
+                val now = System.currentTimeMillis()
+                val isDay = now >= sunrise && now < sunset
                 val updateTime = SimpleDateFormat("HH:mm", Locale.US).apply {
                     timeZone = TimeZone.getTimeZone("Asia/Dubai")
                 }.format(Calendar.getInstance().time)
