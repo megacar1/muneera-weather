@@ -1,3 +1,4 @@
+
 package net.pogacic.balkonwidget
 
 import android.appwidget.AppWidgetManager
@@ -16,11 +17,18 @@ import android.content.Intent
 
 class BalkonWidget : AppWidgetProvider() {
 
+    companion object {
+        private const val PREFS_NAME = "BalkonWidgetPrefs"
+        private const val LAST_SUCCESSFUL_UPDATE = "lastSuccessfulUpdate"
+        private const val REFRESH_ACTION = "net.pogacic.balkonwidget.REFRESH"
+        private const val REFRESH_THRESHOLD = 30 * 60 * 1000L
+    }
+
     override fun onUpdate(context: Context, manager: AppWidgetManager, ids: IntArray) {
         val pendingResult = goAsync()
         Thread {
             try {
-                
+
                 var jsonText: String? = null
                 var lastError: Exception? = null
 
@@ -55,6 +63,7 @@ class BalkonWidget : AppWidgetProvider() {
                         lastError ?: Exception("Weather fetch failed after 5 attempts")
                     )
                 )
+
                 val temp = json.optDouble("temperature")
                 val hum = json.optDouble("humidity")
                 val abs = json.optDouble("absolute_humidity")
@@ -65,44 +74,96 @@ class BalkonWidget : AppWidgetProvider() {
                 val isDay = hour in 6..18
                 val updateTime = SimpleDateFormat("HH:mm", Locale.US).apply {
                     timeZone = TimeZone.getTimeZone("Asia/Dubai")
-                    }.format(Calendar.getInstance().time)
-                
+                }.format(Calendar.getInstance().time)
+
                 for (id in ids) {
                     val views = RemoteViews(context.packageName, R.layout.widget_layout).apply {
                         setTextViewText(R.id.location, "Al Muneera • Last Update: $updateTime")
                         setTextViewText(R.id.temp, String.format("%.1f°C", temp))
                         setTextViewText(R.id.feels, String.format("Feels Like %.1f°C", feels))
-                        setTextViewText(R.id.humidity, "${hum.toInt()}% (${String.format("%.1f", abs)} g/m³)")
-                        setImageViewResource(R.id.big_icon, if (isDay) R.drawable.ic_sun else R.drawable.ic_moon)
-                        setOnClickPendingIntent(R.id.refresh_button, PendingIntent.getBroadcast(context, 0, Intent(context, BalkonWidget::class.java).setAction("net.pogacic.balkonwidget.REFRESH"), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
-                        setOnClickPendingIntent(R.id.root, PendingIntent.getBroadcast(context, 0, Intent(context, BalkonWidget::class.java).setAction("net.pogacic.balkonwidget.REFRESH"), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
+                        setTextViewText(
+                            R.id.humidity,
+                            "${hum.toInt()}% (${String.format("%.1f", abs)} g/m³)"
+                        )
+                        setImageViewResource(
+                            R.id.big_icon,
+                            if (isDay) R.drawable.ic_sun else R.drawable.ic_moon
+                        )
+                        setOnClickPendingIntent(
+                            R.id.refresh_button,
+                            PendingIntent.getBroadcast(
+                                context,
+                                0,
+                                Intent(context, BalkonWidget::class.java)
+                                    .setAction(REFRESH_ACTION),
+                                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                            )
+                        )
+                        setOnClickPendingIntent(
+                            R.id.root,
+                            PendingIntent.getBroadcast(
+                                context,
+                                0,
+                                Intent(context, BalkonWidget::class.java)
+                                    .setAction(REFRESH_ACTION),
+                                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                            )
+                        )
                     }
                     manager.updateAppWidget(id, views)
                 }
 
-} catch (e: Exception) {
-    val errorType = e.javaClass.simpleName
-    val errorMessage = e.message ?: "(no message)"
+                // Save only after the fetch, JSON parsing, and widget updates succeed.
+                context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                    .edit()
+                    .putLong(LAST_SUCCESSFUL_UPDATE, System.currentTimeMillis())
+                    .apply()
 
-    android.util.Log.e(
-        "BalkonWidget",
-        "FAIL: $errorType: $errorMessage\n${android.util.Log.getStackTraceString(e)}"
-    )
-} finally {
-    pendingResult.finish()
-}
-    
+            } catch (e: Exception) {
+                val errorType = e.javaClass.simpleName
+                val errorMessage = e.message ?: "(no message)"
+
+                android.util.Log.e(
+                    "BalkonWidget",
+                    "FAIL: $errorType: $errorMessage\n${android.util.Log.getStackTraceString(e)}"
+                )
+            } finally {
+                pendingResult.finish()
+            }
+
         }.start()
     }
- override fun onReceive(context: Context, intent: Intent) {
-    if (intent.action == "net.pogacic.balkonwidget.REFRESH") {
+
+    private fun refreshAllWidgets(context: Context) {
         val manager = AppWidgetManager.getInstance(context)
         val ids = manager.getAppWidgetIds(
             ComponentName(context, BalkonWidget::class.java)
         )
         onUpdate(context, manager, ids)
-    } else {
-        super.onReceive(context, intent)
     }
-}   
+
+    override fun onReceive(context: Context, intent: Intent) {
+        when (intent.action) {
+            REFRESH_ACTION -> {
+                refreshAllWidgets(context)
+            }
+
+            Intent.ACTION_USER_PRESENT -> {
+                val prefs = context.getSharedPreferences(
+                    PREFS_NAME,
+                    Context.MODE_PRIVATE
+                )
+                val lastUpdate = prefs.getLong(LAST_SUCCESSFUL_UPDATE, 0L)
+                val elapsed = System.currentTimeMillis() - lastUpdate
+
+                // Refresh if there has never been a successful update
+                // or the last one was more than 30 minutes ago.
+                if (lastUpdate == 0L || elapsed > REFRESH_THRESHOLD) {
+                    refreshAllWidgets(context)
+                }
+            }
+
+            else -> super.onReceive(context, intent)
+        }
+    }
 }
