@@ -71,12 +71,9 @@ class BalkonWidget : AppWidgetProvider() {
                 val sunrise = json.optLong("sunrise")
                 val sunset = json.optLong("sunset")
                 val tz = TimeZone.getTimeZone("Asia/Dubai")
-                val hour = Calendar.getInstance(tz).get(Calendar.HOUR_OF_DAY)
-                val now = System.currentTimeMillis()
-                val isDay = now >= sunrise && now < sunset
-                val updateTime = SimpleDateFormat("HH:mm", Locale.US).apply {
-                    timeZone = TimeZone.getTimeZone("Asia/Dubai")
-                }.format(Calendar.getInstance().time)
+                val lastSuccessfulUpdate = System.currentTimeMillis()
+                val isDay = lastSuccessfulUpdate >= sunrise && lastSuccessfulUpdate < sunset
+                val updateTime = SimpleDateFormat("HH:mm", Locale.US).apply { timeZone = tz }.format(lastSuccessfulUpdate)
 
                 for (id in ids) {
                     val views = RemoteViews(context.packageName, R.layout.widget_layout).apply {
@@ -118,7 +115,7 @@ class BalkonWidget : AppWidgetProvider() {
                 // Save only after the fetch, JSON parsing, and widget updates succeed.
                 context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                     .edit()
-                    .putLong(LAST_SUCCESSFUL_UPDATE, System.currentTimeMillis())
+                    .putLong(LAST_SUCCESSFUL_UPDATE, lastSuccessfulUpdate)
                     .apply()
 
             } catch (e: Exception) {
